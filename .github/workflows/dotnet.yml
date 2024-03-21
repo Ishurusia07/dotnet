@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -21,3 +21,16 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --output ./build
+    - name: Copy files to Windows IIS server
+      run: |
+        scp -r ./build/* Administrator@3.92.180.46:C:/inetpub/wwwroot/testing.com
+    - name: Remote PowerShell script - Stop website and app pool
+      uses: appleboy/ssh-action@master
+      with:
+        host: 3.92.180.46
+        username: Administrator
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          Stop-Website -Name "testing.com"
+          Stop-WebAppPool -Name "testing.comAppPool"
