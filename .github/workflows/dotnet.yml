@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Echo Secret
         run: |
-          echo "My secret value is: ${{ secrets.MY_SECRET }}"
-        # Mask the secret to prevent it from being displayed in the logs
+          $secretValue = $env:MY_SECRET
+          Write-Host "My secret value is: $secretValue"
         env:
           MY_SECRET: ${{ secrets.MY_SECRET }}
