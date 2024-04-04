@@ -1,4 +1,4 @@
-name: Example Workflow
+name: Deploy to Remote IIS
 
 on:
   push:
@@ -6,13 +6,35 @@ on:
       - main
 
 jobs:
-  example_job:
-    runs-on: windows-latest
+  deploy:
+    runs-on: windows-2019
 
     steps:
-      - name: Echo Secret
-        run: |
-          $secretValue = $env:MY_SECRET
-          Write-Host "My secret value is: $secretValue"
-        env:
-          MY_SECRET: ${{ secrets.MY_SECRET }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install OpenSSH
+      run: |
+        Add-WindowsCapability -Online -Name OpenSSH.Client*
+
+    - name: Stop Site and App Pool
+      run: |
+        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'test.com'"
+
+        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'test.com'"
+
+
+    - name: Transfer files to remote server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        $env:PATH += ";C:\Program Files\Git\usr\bin"  # Add Git's bin directory to PATH
+        mkdir C:\Users\runner\.ssh  # Create SSH directory
+        Set-Content -Path C:\Users\runner\.ssh\id_rsa -Value $env:SSH_PRIVATE_KEY  # Write SSH private key
+        ssh-keyscan -H remote-server >> C:\Users\runner\.ssh\known_hosts  # Add remote server's host key
+        scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=C:\Users\runner\.ssh\known_hosts path\to\build\folder username@remote-server:/path/to/remote/directory
+
+    - name: Start Site and App Pool
+      run: |
+        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'SiteName'"
+        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'SiteName'"
