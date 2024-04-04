@@ -19,9 +19,10 @@ jobs:
 
     - name: Stop Site and App Pool
       run: |
-         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site \'test.com\'')"
+         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe','stop','site','test.com')"
 
-         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site \'test.com\'')"
+         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe','stop','site','test.com')"
+
 
 
     - name: Transfer files to remote server
