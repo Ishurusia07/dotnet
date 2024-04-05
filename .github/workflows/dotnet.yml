@@ -1,4 +1,4 @@
-name: Transfer File to Remote Server
+name: Transfer Test File to Remote Server
 
 on:
   push:
@@ -13,13 +13,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install OpenSSH
+    - name: Create test file
       run: |
-        choco install openssh -y
-      if: runner.os == 'Windows'
+        echo "This is a test file" > testfile.txt
+        echo "Additional content" >> testfile.txt
 
-    - name: Transfer file to remote server
+    - name: Install PuTTY
       run: |
-        mkdir -p ~/.ssh
-        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCyNakv5jFcBG1Kfe/SzYNYeOEiE2/jdXju4uFvb5gui8ciE0OO9QhaoDAmDnYArMgPQwWpBXivQx4LjAgCYb1PAVmT4uMObNOwydVXZviM4vb/0qdkI+DSiuETGmijWPQIKucSMkzn7I+iL1ysSsMG6rlPgqceQ3KVeOyt6JgfTYwPErdZ7sn8AF3uMKO4feNIn+COBsWvqr/f+Uq2/p1H2hl5AqUiAcj5BqNzKVhsB1La8QXR9hLTlJQ+UEpFeW/S4OG4cI1LuD+L4NSmjh/VgJu43PUPRerHukdQ3WK9hcSqkLdrBdmwowogiIhiTf3PwVwls2zXzSXkbFtG4qhTR+ZoTpkr9ziSz04DJL69ieP60qgrQrRTsBcSy8395MMRfywN3Csltfd03QZwc+RWAixECFmomAzvApD/E4IW+wjitNvRTYIZUAymCucSdv8dB7wVTScynONtpB9KsWfZzMG+jNYkDmYn9Nlku/tjLMoyRQzswvKR8YpDwMi/pmE= administrator@WIN-OESG8GOP4Q1" > ~/.ssh/id_rsa.pub
-        scp -o StrictHostKeyChecking=no "C:\testfolder\testfile.txt" Administrator@192.168.1.59:"C:\inetpub\wwwroot\test.com"
+        mkdir -p "C:\tools"
+        Invoke-WebRequest "https://the.earth.li/~sgtatham/putty/latest/w64/pscp.exe" -OutFile "C:\tools\pscp.exe"
+
+    - name: Transfer test file with password
+      run: |
+        "C:\tools\pscp.exe" -pw Welcome@123 testfile.txt Administrator@192.168.1.159:C:\inetpub\wwwroot\test.com
