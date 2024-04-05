@@ -13,18 +13,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create test file
+    - name: Install OpenSSH
       run: |
-        mkdir C:\testfolder
-        echo "This is a test file" > C:\testfolder\testfile.txt
-        echo "Additional content" >> C:\testfolder\testfile.txt
-      shell: cmd
+        choco install openssh -y
+      if: runner.os == 'Windows'
 
     - name: Transfer file to remote server
       run: |
-        $password = ConvertTo-SecureString "Welcome@123" -AsPlainText -Force
-        $username = "Administrator"
-        $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-        $session = New-PSSession -ComputerName "192.168.1.59" -Credential $cred
-        Copy-Item -Path "C:\testfolder\testfile.txt" -Destination "C:\inetpub\wwwroot\test.com" -ToSession $session
-        Remove-PSSession $session
+        mkdir -p ~/.ssh
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCyNakv5jFcBG1Kfe/SzYNYeOEiE2/jdXju4uFvb5gui8ciE0OO9QhaoDAmDnYArMgPQwWpBXivQx4LjAgCYb1PAVmT4uMObNOwydVXZviM4vb/0qdkI+DSiuETGmijWPQIKucSMkzn7I+iL1ysSsMG6rlPgqceQ3KVeOyt6JgfTYwPErdZ7sn8AF3uMKO4feNIn+COBsWvqr/f+Uq2/p1H2hl5AqUiAcj5BqNzKVhsB1La8QXR9hLTlJQ+UEpFeW/S4OG4cI1LuD+L4NSmjh/VgJu43PUPRerHukdQ3WK9hcSqkLdrBdmwowogiIhiTf3PwVwls2zXzSXkbFtG4qhTR+ZoTpkr9ziSz04DJL69ieP60qgrQrRTsBcSy8395MMRfywN3Csltfd03QZwc+RWAixECFmomAzvApD/E4IW+wjitNvRTYIZUAymCucSdv8dB7wVTScynONtpB9KsWfZzMG+jNYkDmYn9Nlku/tjLMoyRQzswvKR8YpDwMi/pmE= administrator@WIN-OESG8GOP4Q1" > ~/.ssh/id_rsa.pub
+        scp -o StrictHostKeyChecking=no "C:\testfolder\testfile.txt" Administrator@192.168.1.59:"C:\inetpub\wwwroot\test.com"
