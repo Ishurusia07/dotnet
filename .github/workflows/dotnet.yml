@@ -27,4 +27,4 @@ jobs:
 
     - name: Transfer test file with password
       run: |
-        "C:\tools\pscp.exe" -pw Welcome@123 testfile.txt Administrator@192.168.1.159:C:\inetpub\wwwroot\test.com
+        Start-Process -FilePath "C:\tools\pscp.exe" -ArgumentList "-pw Welcome@123 testfile.txt Administrator@192.168.1.159:C:\inetpub\wwwroot\test.com" -NoNewWindow -Wait
