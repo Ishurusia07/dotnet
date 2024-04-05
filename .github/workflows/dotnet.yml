@@ -1,4 +1,4 @@
-name: Deploy to Remote IIS
+name: Transfer File to Remote Server
 
 on:
   push:
@@ -6,36 +6,23 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: windows-2019
+  transfer_file:
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install OpenSSH
+    - name: Create test file
       run: |
-        Add-WindowsCapability -Online -Name OpenSSH.Client*
+        echo "This is a test file" > C:\testfolder\testfile.txt
+        echo "Additional content" >> C:\testfolder\testfile.txt
+      shell: cmd
 
-    - name: Stop Site and App Pool
-      run: |
-         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe','stop','site','test.com')"
-
-         powershell -Command "Start-Process ssh -ArgumentList @('-o','StrictHostKeyChecking=no','-o','UserKnownHostsFile=/dev/null','Administrator@192.168.1.159','-p','Welcome@123','C:\\Windows\\System32\\inetsrv\\appcmd.exe','stop','site','test.com')"
-
-
-
-    - name: Transfer files to remote server
+    - name: Transfer file to remote server
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
       run: |
-        $env:PATH += ";C:\Program Files\Git\usr\bin"  # Add Git's bin directory to PATH
-        mkdir C:\Users\runner\.ssh  # Create SSH directory
-        Set-Content -Path C:\Users\runner\.ssh\id_rsa -Value $env:SSH_PRIVATE_KEY  # Write SSH private key
-        ssh-keyscan -H remote-server >> C:\Users\runner\.ssh\known_hosts  # Add remote server's host key
-        scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=C:\Users\runner\.ssh\known_hosts path\to\build\folder username@remote-server:/path/to/remote/directory
-
-    - name: Start Site and App Pool
-      run: |
-        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'SiteName'"
-        sshpass -p 'Welcome@123' ssh Administrator@192.168.1.159 "C:\\Windows\\System32\\inetsrv\\appcmd.exe stop site 'SiteName'"
+        mkdir C:\Users\Administrator\.ssh  # Create SSH directory
+        Set-Content -Path C:\Users\Administrator\.ssh\id_rsa -Value "${{ secrets.SSH_KEY }}"  # Write SSH private key
+        scp -o StrictHostKeyChecking=no -i C:\Users\Administrator\.ssh\id_rsa C:\testfolder\testfile.txt Administrator@192.168.1.159:C:\inetpub\wwwroot\test.com
