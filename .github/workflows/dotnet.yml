@@ -21,9 +21,10 @@ jobs:
       shell: cmd
 
     - name: Transfer file to remote server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
       run: |
-        mkdir C:\Users\Administrator\.ssh  # Create SSH directory
-        Set-Content -Path C:\Users\Administrator\.ssh\id_rsa -Value "${{ secrets.SSH_KEY }}"  # Write SSH private key
-        scp -o StrictHostKeyChecking=no -i C:\Users\Administrator\.ssh\id_rsa C:\testfolder\testfile.txt Administrator@192.168.1.159:C:\inetpub\wwwroot\test.com
+        $password = ConvertTo-SecureString "Welcome@123" -AsPlainText -Force
+        $username = "Administrator"
+        $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+        $session = New-PSSession -ComputerName "192.168.1.59" -Credential $cred
+        Copy-Item -Path "C:\testfolder\testfile.txt" -Destination "C:\inetpub\wwwroot\test.com" -ToSession $session
+        Remove-PSSession $session
